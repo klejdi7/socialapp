@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -22,27 +24,39 @@ class PostController extends Controller
 					});
 			})
 			->orderBy('created_at', 'desc')
-			->paginate(10);
+			->get();
 
-		return view('posts.index', compact('posts'));
+		return view('posts.home', compact('posts'));
 	}
 
 	public function create()
 	{
-		return view('posts.form');
+		return view('posts.postForm');
 	}
 
 
 	public function store(Request $request)
 	{
+
+		if (Auth::user()->email_verified_at === null) {
+			return redirect()->route('posts.index')->with('error', 'You must verify your email before creating a post.');
+		}
+
 		$request->validate([
 			'title' => 'required|string|max:255',
 			'description' => 'required|string',
 		]);
 
-		$post = Auth::user()->posts()->create($request->only('title', 'description'));
+		$user_id = Auth::id();
+		$user = User::find($user_id);
 
-		return redirect()->route('posts.index')->with('success', 'Post created successfully.');
+		$post = $user->posts()->create([
+			'title' => $request->title,
+			'description' => $request->description,
+		]);
+
+		return redirect()->route('posts')->with('success', 'Post created successfully.');
+
 	}
 
 
