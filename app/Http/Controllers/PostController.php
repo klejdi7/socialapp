@@ -29,7 +29,7 @@ class PostController extends Controller
 		return view('posts.home', compact('posts'));
 	}
 
-	public function create()
+	public function postForms()
 	{
 		return view('posts.postForm');
 	}
@@ -55,22 +55,23 @@ class PostController extends Controller
 			'description' => $request->description,
 		]);
 
-		return redirect()->route('posts')->with('success', 'Post created successfully.');
+		return redirect()->route('home')->with('success', 'Post created successfully.');
 
 	}
 
 
 	public function edit(Post $post)
 	{
-		$this->authorize('update', $post);
-
-		return view('posts.form', compact('post'));
+		return view('posts.postForm', compact('post'));
 	}
 
 	public function update(Request $request, Post $post)
 	{
-		$this->authorize('update', $post);
 
+		if ($post->comments()->exists()) {
+			return redirect()->route('home')->with('error', 'Post cannot be deleted because it has comments.');
+		}
+		
 		$request->validate([
 			'title' => 'required|string|max:255',
 			'description' => 'required|string',
@@ -78,20 +79,23 @@ class PostController extends Controller
 
 		$post->update($request->only('title', 'description'));
 
-		return redirect()->route('posts.index')->with('success', 'Post updated successfully.');
+		return redirect()->route('home')->with('success', 'Post updated successfully.');
 	}
 
+	public function show($id)
+	{
+		$post = Post::findOrFail($id);
+		return view('posts.post', compact('post'));
+	}
 
 	public function destroy(Post $post)
 	{
-		$this->authorize('delete', $post);
-
 		if ($post->comments()->exists()) {
-			return redirect()->route('posts.index')->with('error', 'Post cannot be deleted because it has comments.');
+			return redirect()->route('home')->with('error', 'Post cannot be deleted because it has comments.');
 		}
 
 		$post->delete();
 
-		return redirect()->route('posts.index')->with('success', 'Post deleted successfully.');
+		return redirect()->route('home')->with('success', 'Post deleted successfully.');
 	}
 }

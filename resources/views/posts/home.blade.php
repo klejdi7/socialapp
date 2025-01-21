@@ -10,14 +10,22 @@
 			</div>
 		@endif
 
-		<form method="GET" action="{{ route('posts.index') }}">
+		@if(session('success'))
+			<div class="alert alert-success alert-dismissible fade show" role="alert">
+				{{ session('success') }}
+			</div>
+		@endif
+
+		<form method="GET" action="{{ route('home') }}">
 			<div class="input-group mb-3">
 				<input type="text" name="query" class="form-control" placeholder="Search posts..." value="{{ request('query') }}">
 				<button class="btn btn-outline-secondary" type="submit">Search</button>
 			</div>
 		</form>
 
-		<a href="{{ route('posts.create') }}" class="btn btn-primary mb-3">Create Post</a>
+		@auth 
+			<a href="{{ route('posts.openForm') }}" class="btn btn-primary mb-3">Create Post</a> 
+		@endauth
 
 		@forelse ($posts as $post)
 			<div class="card mb-3">
@@ -26,13 +34,17 @@
 					<span class="text-muted">by {{ $post->user->name }} on {{ $post->created_at->format('Y-m-d H:i') }}</span>
 				</div>
 				<div class="card-body">
+					
 					<p>{{ \Str::limit($post->description, 150) }}</p>
 					<a href="{{ route('posts.show', $post) }}" class="btn btn-link">Read More</a>
+					@include('posts.actionButtons', ['post' => $post])
+
 				</div>
+				<div style="padding:20px"> @include('posts.commentSection', ['post' => $post]) </div>
+
 			</div>
 		@empty
 			<p>No posts found.</p>
 		@endforelse
-
 	</div>
 @endsection
