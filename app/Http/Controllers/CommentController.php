@@ -9,9 +9,11 @@ use App\Notifications\NewCommentNotification;
 
 class CommentController extends Controller
 {
-
+	
 	public function store(Request $request, Post $post)
 	{
+		$this->authorize('create', Comment::class);
+
 		$request->validate([
 			'text' => 'required|string',
 		]);
@@ -31,6 +33,8 @@ class CommentController extends Controller
 
 	public function update(Request $request, Comment $comment)
 	{
+		$this->authorize('update', $comment);
+
 		$request->validate([
 			'text' => 'required|string',
 		]);
@@ -46,8 +50,11 @@ class CommentController extends Controller
 
 	public function destroy(Comment $comment)
 	{
+		$this->authorize('delete', $comment); 
+
 		$comment->delete();
 
 		return back()->with('success', 'Comment deleted successfully.');
 	}
+	
 }

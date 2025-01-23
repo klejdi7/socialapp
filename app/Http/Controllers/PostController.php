@@ -29,14 +29,17 @@ class PostController extends Controller
 		return view('posts.home', compact('posts'));
 	}
 
-	public function postForms()
+	public function create()
 	{
+		$this->authorize('create', Post::class); 
 		return view('posts.postForm');
 	}
 
 
 	public function store(Request $request)
 	{
+
+		$this->authorize('create', Post::class); 
 
 		if (Auth::user()->email_verified_at === null) {
 			return redirect()->route('posts.index')->with('error', 'You must verify your email before creating a post.');
@@ -62,11 +65,13 @@ class PostController extends Controller
 
 	public function edit(Post $post)
 	{
+		$this->authorize('update', $post);
 		return view('posts.postForm', compact('post'));
 	}
 
 	public function update(Request $request, Post $post)
 	{
+		$this->authorize('update', $post);
 
 		if ($post->comments()->exists()) {
 			return redirect()->route('home')->with('error', 'Post cannot be deleted because it has comments.');
@@ -90,6 +95,8 @@ class PostController extends Controller
 
 	public function destroy(Post $post)
 	{
+		$this->authorize('delete', $post); 
+		
 		if ($post->comments()->exists()) {
 			return redirect()->route('home')->with('error', 'Post cannot be deleted because it has comments.');
 		}

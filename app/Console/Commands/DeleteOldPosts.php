@@ -26,15 +26,10 @@ class DeleteOldPosts extends Command
      */
     public function handle()
     {
-        $posts = Post::doesntHave('comments')
+        $deletedPosts = Post::doesntHave('comments')
             ->where('created_at', '<=', now()->subYear())
-            ->get();
+            ->delete();
 
-        foreach ($posts as $post) {
-            $post->delete();
-            $this->info("Soft deleted post: {$post->id}");
-        }
-
-        $this->info('Old posts removed successfully.');
+        $this->info("Soft deleted {$deletedPosts} posts.");
     }
 }
